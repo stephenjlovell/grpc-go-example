@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package calc;
+
+option go_package = "calc/;calc";
+
+enum Operations {
+  UNKNOWN = 0;
+  ADD = 1;
+  SUBTRACT = 2;
+  MULTIPLY = 3;
+  DIVIDE = 5;
+}
+
+message CalcRequest {
+  Operations operation = 1;
+  repeated int64 operands = 2;
+}
+
+message CalcResponse {
+  float result = 1;
+}
+
+service CalcService {
+  rpc Calculate (CalcRequest) returns (CalcResponse) {  }
+}
