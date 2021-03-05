@@ -17,6 +17,7 @@ const (
 
 // GreetServer is a placeholder for where our server logic would reside.
 type GreetServer struct {
+	// this is awkward but necessary to provide guarantees about our interface to greetpb.RegisterGreetServiceServer
 	greetpb.UnimplementedGreetServiceServer
 }
 
