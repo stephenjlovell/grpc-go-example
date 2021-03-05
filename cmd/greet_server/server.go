@@ -32,13 +32,7 @@ func (s *GreetServer) Greet(ctx context.Context, pb *greetpb.GreetRequest) (*gre
 }
 
 func main() {
-	fmt.Println("greetings!")
-	// listen on the default port for gRPC
-	listener, err := net.Listen("tcp", LISTEN_ADDRESS)
-	if err != nil {
-		log.Fatalln("unable to connect to port")
-	}
-
+	listener := listenTo(LISTEN_ADDRESS)
 	grpcServer := grpc.NewServer()
 
 	greetpb.RegisterGreetServiceServer(grpcServer, &GreetServer{})
@@ -46,4 +40,14 @@ func main() {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v\n", err)
 	}
+}
+
+func listenTo(address string) net.Listener {
+	fmt.Println("greetings!")
+	// listen on the default port for gRPC
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatalln("unable to connect to port")
+	}
+	return listener
 }

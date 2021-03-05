@@ -10,7 +10,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :operands, :int64, 2
     end
     add_message "calc.CalcResponse" do
-      optional :result, :float, 1
+      optional :result, :double, 1
     end
     add_enum "calc.Operations" do
       value :UNKNOWN, 0

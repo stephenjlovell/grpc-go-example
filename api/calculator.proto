@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package calc;
 
-option go_package = "calc/;calc";
+option go_package = "calcpb/;calcpb";
 
 enum Operations {
   UNKNOWN = 0;
@@ -18,7 +18,7 @@ message CalcRequest {
 }
 
 message CalcResponse {
-  float result = 1;
+  double result = 1;
 }
 
 service CalcService {
