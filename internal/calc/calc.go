@@ -3,6 +3,8 @@ package calc
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
 )
@@ -11,21 +13,29 @@ const (
 	LISTEN_ADDRESS = "0.0.0.0:50052"
 )
 
-// CalcServer is a placeholder for where our server logic would reside.
-type CalcServer struct {
+// Server is a placeholder for where our server logic would reside.
+type Server struct {
 	// this is awkward but necessary to provide guarantees about our interface to calcpb.RegisterCalcServiceServer
 	calcpb.UnimplementedCalcServiceServer
 }
 
 // Calculate generates a response to the rpc call
-func (s *CalcServer) Calculate(ctx context.Context, pb *calcpb.CalcRequest) (*calcpb.CalcResponse, error) {
+func (s *Server) Calculate(ctx context.Context, pb *calcpb.CalcRequest) (*calcpb.CalcResponse, error) {
 	result, err := calculateResult(pb)
 	if err != nil {
+		log.Printf("WARNING: %v", err)
 		return nil, err
 	}
+	logResult(result, pb)
 	return &calcpb.CalcResponse{
 		Result: result,
 	}, nil
+}
+
+func logResult(result float64, pb *calcpb.CalcRequest) {
+	op := strings.ToLower(pb.GetOperation().String())
+	operands := pb.GetOperands()
+	log.Printf("%s:%v => %8f", op, operands, result)
 }
 
 func calculateResult(pb *calcpb.CalcRequest) (float64, error) {

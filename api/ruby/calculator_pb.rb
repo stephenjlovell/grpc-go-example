@@ -17,7 +17,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :ADD, 1
       value :SUBTRACT, 2
       value :MULTIPLY, 3
-      value :DIVIDE, 5
+      value :DIVIDE, 4
     end
   end
 end

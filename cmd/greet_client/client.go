@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
@@ -15,7 +14,7 @@ func main() {
 
 	client := greetpb.NewGreetServiceClient(cc)
 	response := sendRequest(client)
-	fmt.Printf("received response: %v\n", response.GetResponse())
+	log.Printf("received response: %v\n", response.GetResponse())
 }
 
 func connect() *grpc.ClientConn {
@@ -27,7 +26,7 @@ func connect() *grpc.ClientConn {
 }
 
 func sendRequest(client greetpb.GreetServiceClient) *greetpb.GreetResponse {
-	fmt.Println("executing RPC call...")
+	log.Println("executing RPC call...")
 	request := &greetpb.GreetRequest{
 		Greeting: &greetpb.Greeting{
 			FirstName: "Steve",
