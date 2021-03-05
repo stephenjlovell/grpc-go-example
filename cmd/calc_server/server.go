@@ -6,17 +6,13 @@ import (
 	"net"
 
 	calcpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
-	calc "github.com/stephenjlovell/grpc-go-example/internal/calc_server"
+	calc "github.com/stephenjlovell/grpc-go-example/internal/calc"
 
 	"google.golang.org/grpc"
 )
 
-const (
-	LISTEN_ADDRESS = "0.0.0.0:50052"
-)
-
 func main() {
-	listener := listenTo(LISTEN_ADDRESS)
+	listener := listenTo(calc.LISTEN_ADDRESS)
 	grpcServer := grpc.NewServer()
 
 	calcpb.RegisterCalcServiceServer(grpcServer, &calc.CalcServer{})

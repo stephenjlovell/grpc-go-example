@@ -6,6 +6,7 @@ import (
 	"log"
 
 	calcpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
+	calc "github.com/stephenjlovell/grpc-go-example/internal/calc"
 	"google.golang.org/grpc"
 )
 
@@ -19,7 +20,7 @@ func main() {
 }
 
 func connect() *grpc.ClientConn {
-	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cc, err := grpc.Dial(calc.LISTEN_ADDRESS, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect to server: %v\n", err)
 	}

@@ -7,6 +7,10 @@ import (
 	"github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
 )
 
+const (
+	LISTEN_ADDRESS = "0.0.0.0:50052"
+)
+
 // CalcServer is a placeholder for where our server logic would reside.
 type CalcServer struct {
 	// this is awkward but necessary to provide guarantees about our interface to calcpb.RegisterCalcServiceServer
