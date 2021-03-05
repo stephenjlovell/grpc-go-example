@@ -8,9 +8,11 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "calc.CalcRequest" do
       optional :operation, :enum, 1, "calc.Operations"
       repeated :operands, :int64, 2
+      optional :job_uid, :string, 3
     end
     add_message "calc.CalcResponse" do
       optional :result, :double, 1
+      optional :job_uid, :string, 2
     end
     add_enum "calc.Operations" do
       value :UNKNOWN, 0

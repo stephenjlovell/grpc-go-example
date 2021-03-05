@@ -15,10 +15,12 @@ enum Operations {
 message CalcRequest {
   Operations operation = 1;
   repeated int64 operands = 2;
+  string job_uid = 3;
 }
 
 message CalcResponse {
   double result = 1;
+  string job_uid = 2;
 }
 
 service CalcService {

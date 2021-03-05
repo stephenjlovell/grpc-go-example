@@ -23,19 +23,21 @@ type Server struct {
 func (s *Server) Calculate(ctx context.Context, pb *calcpb.CalcRequest) (*calcpb.CalcResponse, error) {
 	result, err := calculateResult(pb)
 	if err != nil {
-		log.Printf("WARNING: %v", err)
+		log.Printf("[%s] WARNING: %v", pb.GetJobUid(), err)
 		return nil, err
 	}
 	logResult(result, pb)
 	return &calcpb.CalcResponse{
 		Result: result,
+		JobUid: pb.GetJobUid(),
 	}, nil
 }
 
 func logResult(result float64, pb *calcpb.CalcRequest) {
 	op := strings.ToLower(pb.GetOperation().String())
 	operands := pb.GetOperands()
-	log.Printf("%s:%v => %8f", op, operands, result)
+	uid := pb.GetJobUid()
+	log.Printf("[%s] %s:%v => %8f", uid, op, operands, result)
 }
 
 func calculateResult(pb *calcpb.CalcRequest) (float64, error) {

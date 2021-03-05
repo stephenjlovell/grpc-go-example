@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	calcpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
 	calc "github.com/stephenjlovell/grpc-go-example/internal/calc"
 	"google.golang.org/grpc"
@@ -25,7 +26,7 @@ func main() {
 }
 
 func startClient(i int, wg *sync.WaitGroup) {
-	log.Printf("client %d: starting\n", i)
+	log.Printf("client %d: starting", i)
 	cc := connect()
 	defer cc.Close()
 	defer wg.Done()
@@ -34,16 +35,17 @@ func startClient(i int, wg *sync.WaitGroup) {
 
 	for j := 0; j < 10; j++ {
 		// sleep for 101-300 ms
-		time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
+		time.Sleep(time.Duration(rand.Intn(300)+200) * time.Millisecond)
 
-		response, err := sendRequest(client)
+		r := makeRandomRequest()
+		response, err := sendRequest(client, r)
 		if err != nil {
-			log.Printf("client %d job %d WARNING: %v\n", i, j, err)
+			log.Printf("[%s] client:%d WARNING: %v", r.GetJobUid(), i, err)
 			continue
 		}
-		log.Printf("client %d: job %d result: %v\n", i, j, response.GetResult())
+		log.Printf("[%s] client:%d result: %v", response.GetJobUid(), i, response.GetResult())
 	}
-	log.Printf("client %d finished working\n", i)
+	log.Printf("client:%d finished working", i)
 }
 
 func connect() *grpc.ClientConn {
@@ -55,23 +57,24 @@ func connect() *grpc.ClientConn {
 	return cc
 }
 
-func sendRequest(client calcpb.CalcServiceClient) (*calcpb.CalcResponse, error) {
-	request := makeRandomRequest()
-	response, err := client.Calculate(context.Background(), request)
+func sendRequest(client calcpb.CalcServiceClient, r *calcpb.CalcRequest) (*calcpb.CalcResponse, error) {
+	response, err := client.Calculate(context.Background(), r)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %v", err)
 	}
 	return response, nil
 }
 
+// NOTE: this intentionally generates occasional malformed requests in order to make sure the
+// server can gracefully handle them.
 func makeRandomRequest() *calcpb.CalcRequest {
-	operation := rand.Intn(5)
-	operands := make([]int64, rand.Intn(5)+2)
+	operands := make([]int64, rand.Intn(10))
 	for i := range operands {
-		operands[i] = int64(rand.Intn(99) + 1)
+		operands[i] = int64(rand.Intn(100))
 	}
 	return &calcpb.CalcRequest{
-		Operation: calcpb.Operations(operation),
+		Operation: calcpb.Operations(rand.Intn(5)),
 		Operands:  operands,
+		JobUid:    uuid.NewString(),
 	}
 }
