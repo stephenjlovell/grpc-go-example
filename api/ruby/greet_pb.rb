@@ -5,8 +5,21 @@ require 'google/protobuf'
 
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_file("greet.proto", :syntax => :proto3) do
+    add_message "greet.Greeting" do
+      optional :first_name, :string, 1
+      optional :last_name, :string, 2
+    end
+    add_message "greet.GreetRequest" do
+      optional :greeting, :message, 1, "greet.Greeting"
+    end
+    add_message "greet.GreetResponse" do
+      optional :response, :string, 1
+    end
   end
 end
 
 module Greet
+  Greeting = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.Greeting").msgclass
+  GreetRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetRequest").msgclass
+  GreetResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetResponse").msgclass
 end

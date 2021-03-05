@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 
-	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg"
+	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
 
 	"google.golang.org/grpc"
 )
@@ -14,12 +15,20 @@ const (
 	LISTEN_ADDRESS = "0.0.0.0:50051"
 )
 
-type Server struct {
+// GreetServer is a placeholder for where our server logic would reside.
+type GreetServer struct {
+	greetpb.UnimplementedGreetServiceServer
 }
 
-// func (s *Server) Greet() {
-
-// }
+// Greet generates a response to the rpc call
+func (s *GreetServer) Greet(ctx context.Context, pb *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
+	firstName := pb.GetGreeting().GetFirstName()
+	lastName := pb.GetGreeting().GetLastName()
+	response := "Hello " + firstName + " " + lastName + "!"
+	return &greetpb.GreetResponse{
+		Response: response,
+	}, nil
+}
 
 func main() {
 	fmt.Println("greetings!")
@@ -29,11 +38,11 @@ func main() {
 		log.Fatalln("unable to connect to port")
 	}
 
-	grpc.NewServer()
-	server := grpc.NewServer()
-	greetpb.RegisterGreetServiceServer(server, &Server{})
+	grpcServer := grpc.NewServer()
 
-	if err := server.Serve(listener); err != nil {
+	greetpb.RegisterGreetServiceServer(grpcServer, &GreetServer{})
+
+	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v\n", err)
 	}
 }
