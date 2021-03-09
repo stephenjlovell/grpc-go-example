@@ -13,9 +13,24 @@ func main() {
 	cc := connect()
 	defer cc.Close()
 	client := greetpb.NewGreetServiceClient(cc)
-	// make unary api request
-	response := sendRequest(client)
-	log.Printf("received unary response: %v\n", response.GetResponse())
+	doUnaryRequest(client)
+	doServerStreaming(client)
+	doClientStreaming(client)
+}
+
+func connect() *grpc.ClientConn {
+	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to connect to server: %v\n", err)
+	}
+	return cc
+}
+
+func doClientStreaming(client greetpb.GreetServiceClient) {
+
+}
+
+func doServerStreaming(client greetpb.GreetServiceClient) {
 	// make streaming api request
 	responseStream := requestServerStreaming(client)
 	for {
@@ -29,15 +44,6 @@ func main() {
 		}
 		log.Printf("received streamed response: %s\n", msg.GetResponse())
 	}
-
-}
-
-func connect() *grpc.ClientConn {
-	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Failed to connect to server: %v\n", err)
-	}
-	return cc
 }
 
 func requestServerStreaming(client greetpb.GreetServiceClient) greetpb.GreetService_GreetManyTimesClient {
@@ -57,7 +63,7 @@ func requestServerStreaming(client greetpb.GreetServiceClient) greetpb.GreetServ
 
 // GreetManyTimes(ctx context.Context, in *GreetManyTimesRequest, opts ...grpc.CallOption) (GreetService_GreetManyTimesClient, error)
 
-func sendRequest(client greetpb.GreetServiceClient) *greetpb.GreetResponse {
+func doUnaryRequest(client greetpb.GreetServiceClient) {
 	log.Println("executing single RPC call...")
 	request := &greetpb.GreetRequest{
 		Greeting: &greetpb.Greeting{
@@ -69,5 +75,5 @@ func sendRequest(client greetpb.GreetServiceClient) *greetpb.GreetResponse {
 	if err != nil {
 		log.Fatalf("failed to receive response: %v\n", err)
 	}
-	return response
+	log.Printf("received unary response: %v\n", response.GetResponse())
 }
