@@ -15,6 +15,12 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "greet.GreetResponse" do
       optional :response, :string, 1
     end
+    add_message "greet.GreetManyTimesRequest" do
+      optional :greeting, :message, 1, "greet.Greeting"
+    end
+    add_message "greet.GreetManyTimesResponse" do
+      optional :response, :string, 1
+    end
   end
 end
 
@@ -22,4 +28,6 @@ module Greet
   Greeting = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.Greeting").msgclass
   GreetRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetRequest").msgclass
   GreetResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetResponse").msgclass
+  GreetManyTimesRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetManyTimesRequest").msgclass
+  GreetManyTimesResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetManyTimesResponse").msgclass
 end
