@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"strconv"
@@ -33,7 +34,7 @@ func (s *GreetServer) Greet(ctx context.Context, pb *greetpb.GreetRequest) (*gre
 	}, nil
 }
 
-// GreetManyTimes implements a streaming service
+// GreetManyTimes implements an example of server streaming
 func (s *GreetServer) GreetManyTimes(pb *greetpb.GreetManyTimesRequest, stream greetpb.GreetService_GreetManyTimesServer) error {
 	firstName := pb.GetGreeting().GetFirstName()
 	lastName := pb.GetGreeting().GetLastName()
@@ -43,10 +44,30 @@ func (s *GreetServer) GreetManyTimes(pb *greetpb.GreetManyTimesRequest, stream g
 		resp := &greetpb.GreetManyTimesResponse{
 			Response: str,
 		}
-		stream.Send(resp)
+		if err := stream.Send(resp); err != nil {
+			return fmt.Errorf("server failed to send response: %v", err)
+		}
 		time.Sleep(1 * time.Second)
 	}
 	return nil
+}
+
+// LongGreet implements an example of client streaming
+func (s *GreetServer) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
+	str := "Welcome"
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&greetpb.LongGreetResponse{
+				Response: str + "!",
+			})
+		}
+		if err != nil {
+			return fmt.Errorf("server failed to read from stream: %v", err)
+		}
+		firstName := req.Greeting.GetFirstName()
+		str += ", " + firstName
+	}
 }
 
 func main() {

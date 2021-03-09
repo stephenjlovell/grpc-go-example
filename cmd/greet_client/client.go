@@ -27,7 +27,36 @@ func connect() *grpc.ClientConn {
 }
 
 func doClientStreaming(client greetpb.GreetServiceClient) {
+	log.Println("starting a client streaming RPC")
+	stream, err := client.LongGreet(context.Background())
+	if err != nil {
+		log.Fatalf("error while creating stream: %v\n", err)
+	}
 
+	reqs := []*greetpb.LongGreetRequest{
+		newLongGreetRequest("Steve"),
+		newLongGreetRequest("Jon"),
+		newLongGreetRequest("April"),
+		newLongGreetRequest("Julie"),
+	}
+	for _, req := range reqs {
+		if err := stream.Send(req); err != nil {
+			log.Fatalf("failed to send request: %v", err)
+		}
+	}
+	response, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("failed to receive response: %v", err)
+	}
+	log.Printf("received client streaming response: %s", response.GetResponse())
+}
+
+func newLongGreetRequest(firstName string) *greetpb.LongGreetRequest {
+	return &greetpb.LongGreetRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: firstName,
+		},
+	}
 }
 
 func doServerStreaming(client greetpb.GreetServiceClient) {
