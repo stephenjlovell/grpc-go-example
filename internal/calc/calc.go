@@ -3,6 +3,7 @@ package calc
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"strings"
 
@@ -17,6 +18,29 @@ const (
 type Server struct {
 	// this is awkward but necessary to provide guarantees about our interface to calcpb.RegisterCalcServiceServer
 	calcpb.UnimplementedCalcServiceServer
+}
+
+// GetAverage computes the average from a stream of ints
+func (s *Server) GetAverage(stream calcpb.CalcService_GetAverageServer) error {
+	avg, sum := float64(0), float64(0)
+	requestID := ""
+	for n := 1; n <= 100000; n++ {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			log.Printf("[%s] average => %v", requestID, avg)
+			return stream.SendAndClose(&calcpb.AverageResponse{
+				Result: avg,
+				JobUid: requestID,
+			})
+		}
+		if err != nil {
+			return fmt.Errorf("unable to receive from stream: %v", err)
+		}
+		sum += float64(req.GetValue())
+		avg = sum / float64(n)
+		requestID = req.GetJobUid()
+	}
+	return fmt.Errorf("maximum allowed argument size exceeded")
 }
 
 // GetPrimes decomposes req.Value into a stream of primes
@@ -43,7 +67,7 @@ func (s *Server) GetPrimes(req *calcpb.PrimeRequest, stream calcpb.CalcService_G
 		}
 	}
 	// log.Printf("[%s] %s:%v => %8f", uid, op, operands, result)
-	log.Printf("[%s] PRIMES: %v => %v", req.GetJobUid(), req.GetValue(), sent)
+	log.Printf("[%s] primes: %v => %v", req.GetJobUid(), req.GetValue(), sent)
 	return nil
 }
 

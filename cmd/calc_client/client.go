@@ -16,8 +16,49 @@ import (
 )
 
 func main() {
-	streamPrimes()
-	doArithmetic()
+	doAverage()
+	// streamPrimes()
+	// doArithmetic()
+}
+
+// client streaming example
+func doAverage() {
+	cc := connect()
+	defer cc.Close()
+	client := calcpb.NewCalcServiceClient(cc)
+
+	stream, err := client.GetAverage(context.Background())
+	requestID := uuid.NewString()
+	if err != nil {
+		log.Printf("[%s] WARNING: could not open stream: %v", requestID, err)
+		return
+	}
+	seq := fibonacciOfLength(25)
+	for _, v := range seq {
+		err := stream.Send(&calcpb.AverageRequest{
+			JobUid: requestID,
+			Value:  v,
+		})
+		if err != nil {
+			log.Printf("[%s] WARNING: request failed to send: %v", requestID, err)
+			return
+		}
+	}
+	// await results
+	res, err := stream.CloseAndRecv()
+	log.Printf("[%s] average: %v => %v", requestID, seq, res.GetResult())
+
+}
+
+// 1, 1, 2, 3, 5, 8...
+func fibonacciOfLength(n int) []int64 {
+	seq := make([]int64, n, n)
+	seq[0] = 1
+	seq[1] = 1
+	for i := 2; i < n; i++ {
+		seq[i] = seq[i-1] + seq[i-2]
+	}
+	return seq
 }
 
 func streamPrimes() {
