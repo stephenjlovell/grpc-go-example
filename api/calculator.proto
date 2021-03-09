@@ -23,6 +23,18 @@ message CalcResponse {
   string job_uid = 2;
 }
 
+message PrimeRequest {
+  uint32 value = 1;
+  string job_uid = 2;
+}
+
+message PrimeResponse {
+  uint32 value = 1;
+  string job_uid = 2;
+}
+
 service CalcService {
   rpc Calculate (CalcRequest) returns (CalcResponse) {  }
+
+  rpc GetPrimes (PrimeRequest) returns (stream PrimeResponse) {}
 }

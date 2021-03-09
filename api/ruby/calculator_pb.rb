@@ -14,6 +14,14 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :result, :double, 1
       optional :job_uid, :string, 2
     end
+    add_message "calc.PrimeRequest" do
+      optional :value, :uint32, 1
+      optional :job_uid, :string, 2
+    end
+    add_message "calc.PrimeResponse" do
+      optional :value, :uint32, 1
+      optional :job_uid, :string, 2
+    end
     add_enum "calc.Operations" do
       value :UNKNOWN, 0
       value :ADD, 1
@@ -27,5 +35,7 @@ end
 module Calc
   CalcRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.CalcRequest").msgclass
   CalcResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.CalcResponse").msgclass
+  PrimeRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.PrimeRequest").msgclass
+  PrimeResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.PrimeResponse").msgclass
   Operations = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.Operations").enummodule
 end

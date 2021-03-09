@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CalcServiceClient interface {
 	Calculate(ctx context.Context, in *CalcRequest, opts ...grpc.CallOption) (*CalcResponse, error)
+	GetPrimes(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (CalcService_GetPrimesClient, error)
 }
 
 type calcServiceClient struct {
@@ -38,11 +39,44 @@ func (c *calcServiceClient) Calculate(ctx context.Context, in *CalcRequest, opts
 	return out, nil
 }
 
+func (c *calcServiceClient) GetPrimes(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (CalcService_GetPrimesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &CalcService_ServiceDesc.Streams[0], "/calc.CalcService/GetPrimes", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &calcServiceGetPrimesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type CalcService_GetPrimesClient interface {
+	Recv() (*PrimeResponse, error)
+	grpc.ClientStream
+}
+
+type calcServiceGetPrimesClient struct {
+	grpc.ClientStream
+}
+
+func (x *calcServiceGetPrimesClient) Recv() (*PrimeResponse, error) {
+	m := new(PrimeResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CalcServiceServer is the server API for CalcService service.
 // All implementations must embed UnimplementedCalcServiceServer
 // for forward compatibility
 type CalcServiceServer interface {
 	Calculate(context.Context, *CalcRequest) (*CalcResponse, error)
+	GetPrimes(*PrimeRequest, CalcService_GetPrimesServer) error
 	mustEmbedUnimplementedCalcServiceServer()
 }
 
@@ -52,6 +86,9 @@ type UnimplementedCalcServiceServer struct {
 
 func (UnimplementedCalcServiceServer) Calculate(context.Context, *CalcRequest) (*CalcResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Calculate not implemented")
+}
+func (UnimplementedCalcServiceServer) GetPrimes(*PrimeRequest, CalcService_GetPrimesServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetPrimes not implemented")
 }
 func (UnimplementedCalcServiceServer) mustEmbedUnimplementedCalcServiceServer() {}
 
@@ -84,6 +121,27 @@ func _CalcService_Calculate_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CalcService_GetPrimes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PrimeRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(CalcServiceServer).GetPrimes(m, &calcServiceGetPrimesServer{stream})
+}
+
+type CalcService_GetPrimesServer interface {
+	Send(*PrimeResponse) error
+	grpc.ServerStream
+}
+
+type calcServiceGetPrimesServer struct {
+	grpc.ServerStream
+}
+
+func (x *calcServiceGetPrimesServer) Send(m *PrimeResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // CalcService_ServiceDesc is the grpc.ServiceDesc for CalcService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,6 +154,12 @@ var CalcService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CalcService_Calculate_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetPrimes",
+			Handler:       _CalcService_GetPrimes_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "calculator.proto",
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"sync"
@@ -15,7 +16,46 @@ import (
 )
 
 func main() {
-	// create 4 example clients with their own connection:
+	streamPrimes()
+	doArithmetic()
+}
+
+func streamPrimes() {
+	cc := connect()
+	defer cc.Close()
+	client := calcpb.NewCalcServiceClient(cc)
+	getPrimesFor(client, 2)
+	getPrimesFor(client, 42)
+	getPrimesFor(client, 12345678)
+}
+
+func getPrimesFor(client calcpb.CalcServiceClient, val uint32) {
+	req := &calcpb.PrimeRequest{
+		Value:  val,
+		JobUid: uuid.NewString(),
+	}
+	stream, err := client.GetPrimes(context.Background(), req)
+	if err != nil {
+		log.Printf("[%s] WARNING: request failed: %v", req.GetJobUid(), err)
+		return
+	}
+	results := []uint32{}
+	for {
+		resp, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Printf("[%s] WARNING: request failed: %v", req.GetJobUid(), err)
+			break
+		}
+		results = append(results, resp.GetValue())
+	}
+	log.Printf("[%s] primes: %v => %v", req.GetJobUid(), val, results)
+}
+
+func doArithmetic() {
+	// create 4 worker threads sharing a connection
 	var wg sync.WaitGroup
 	for i := 0; i < 4; i++ {
 		wg.Add(1)
