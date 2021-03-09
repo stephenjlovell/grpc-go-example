@@ -50,7 +50,7 @@ func doAverage() {
 
 }
 
-// 1, 1, 2, 3, 5, 8...
+// 1, 1, 2, 3, 5, 8... till your int64 overfloweth
 func fibonacciOfLength(n int) []int64 {
 	seq := make([]int64, n, n)
 	seq[0] = 1

@@ -27,6 +27,12 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "greet.LongGreetResponse" do
       optional :response, :string, 1
     end
+    add_message "greet.GreetEveryoneRequest" do
+      optional :greeting, :message, 1, "greet.Greeting"
+    end
+    add_message "greet.GreetEveryoneResponse" do
+      optional :response, :string, 1
+    end
   end
 end
 
@@ -38,4 +44,6 @@ module Greet
   GreetManyTimesResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetManyTimesResponse").msgclass
   LongGreetRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.LongGreetRequest").msgclass
   LongGreetResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.LongGreetResponse").msgclass
+  GreetEveryoneRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetEveryoneRequest").msgclass
+  GreetEveryoneResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("greet.GreetEveryoneResponse").msgclass
 end
