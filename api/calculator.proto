@@ -33,8 +33,20 @@ message PrimeResponse {
   string job_uid = 2;
 }
 
-service CalcService {
-  rpc Calculate (CalcRequest) returns (CalcResponse) {  }
+message AverageRequest {
+  int64 value = 1;
+  string job_uid = 2;
+}
 
-  rpc GetPrimes (PrimeRequest) returns (stream PrimeResponse) {}
+message AverageResponse {
+  double result = 1;
+  string job_uid = 2;
+}
+
+service CalcService {
+  rpc Calculate(CalcRequest) returns (CalcResponse) { }
+
+  rpc GetPrimes(PrimeRequest) returns (stream PrimeResponse) {}
+
+  rpc GetAverage(stream AverageRequest) returns (AverageResponse) {}
 }
