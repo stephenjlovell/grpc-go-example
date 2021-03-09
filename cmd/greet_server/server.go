@@ -47,7 +47,7 @@ func (s *GreetServer) GreetManyTimes(pb *greetpb.GreetManyTimesRequest, stream g
 		if err := stream.Send(resp); err != nil {
 			return fmt.Errorf("server failed to send response: %v", err)
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(100 * time.Millisecond)
 	}
 	return nil
 }

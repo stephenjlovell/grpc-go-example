@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"time"
 
 	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
 	"google.golang.org/grpc"
@@ -43,6 +44,7 @@ func doClientStreaming(client greetpb.GreetServiceClient) {
 		if err := stream.Send(req); err != nil {
 			log.Fatalf("failed to send request: %v", err)
 		}
+		time.Sleep(100 * time.Millisecond)
 	}
 	response, err := stream.CloseAndRecv()
 	if err != nil {
