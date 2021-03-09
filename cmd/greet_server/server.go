@@ -18,7 +18,7 @@ const (
 	LISTEN_ADDRESS = "0.0.0.0:50051"
 )
 
-// GreetServer is a placeholder for where our server logic would reside.
+// GreetServer is our server implentation.
 type GreetServer struct {
 	// this is awkward but necessary to provide guarantees about our interface to greetpb.RegisterGreetServiceServer
 	greetpb.UnimplementedGreetServiceServer
@@ -67,6 +67,28 @@ func (s *GreetServer) LongGreet(stream greetpb.GreetService_LongGreetServer) err
 		}
 		firstName := req.Greeting.GetFirstName()
 		str += ", " + firstName
+	}
+}
+
+// GreetEveryone implements bi-directional streaming
+func (s *GreetServer) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("server failed to read from stream: %v", err)
+		}
+		firstName := req.GetGreeting().GetFirstName()
+		response := "Hello " + firstName + "!"
+		log.Println(response)
+		sendErr := stream.Send(&greetpb.GreetEveryoneResponse{
+			Response: response,
+		})
+		if sendErr != nil {
+			return fmt.Errorf("server failed to send to stream: %v", sendErr)
+		}
 	}
 }
 

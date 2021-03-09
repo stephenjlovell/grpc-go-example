@@ -17,6 +17,7 @@ func main() {
 	doUnaryRequest(client)
 	doServerStreaming(client)
 	doClientStreaming(client)
+	doBiStreaming(client)
 }
 
 func connect() *grpc.ClientConn {
@@ -25,6 +26,51 @@ func connect() *grpc.ClientConn {
 		log.Fatalf("Failed to connect to server: %v\n", err)
 	}
 	return cc
+}
+
+func doBiStreaming(client greetpb.GreetServiceClient) {
+	log.Println("starting a bidirectional streaming RPC")
+	stream, err := client.GreetEveryone(context.Background())
+	if err != nil {
+		log.Fatalf("error while creating stream: %v\n", err)
+	}
+
+	reqs := []*greetpb.GreetEveryoneRequest{
+		newGreetEveryoneRequest("Steve"),
+		newGreetEveryoneRequest("Jon"),
+		newGreetEveryoneRequest("April"),
+		newGreetEveryoneRequest("Julie"),
+		newGreetEveryoneRequest("Mark"),
+	}
+
+	waitc := make(chan struct{})
+	// send
+	go func() {
+		for _, req := range reqs {
+			if sendErr := stream.Send(req); sendErr != nil {
+				log.Fatalf("failed to send request: %v", sendErr)
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+	// receive
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				close(waitc)
+				break
+			}
+			if err != nil {
+				close(waitc)
+				log.Fatalf("failed to receive response: %v", err)
+			}
+			log.Printf("received response: %v", res.GetResponse())
+		}
+	}()
+
+	<-waitc
 }
 
 func doClientStreaming(client greetpb.GreetServiceClient) {
@@ -55,6 +101,14 @@ func doClientStreaming(client greetpb.GreetServiceClient) {
 
 func newLongGreetRequest(firstName string) *greetpb.LongGreetRequest {
 	return &greetpb.LongGreetRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: firstName,
+		},
+	}
+}
+
+func newGreetEveryoneRequest(firstName string) *greetpb.GreetEveryoneRequest {
+	return &greetpb.GreetEveryoneRequest{
 		Greeting: &greetpb.Greeting{
 			FirstName: firstName,
 		},
