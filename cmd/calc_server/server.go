@@ -9,6 +9,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -21,6 +22,8 @@ func main() {
 	grpcServer := grpc.NewServer(getCreds())
 
 	calcpb.RegisterCalcServiceServer(grpcServer, &calc.Server{})
+
+	reflection.Register(grpcServer)
 
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v\n", err)
