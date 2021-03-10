@@ -18,7 +18,7 @@ const (
 
 var _client *Client
 
-type BlogItem struct {
+type Post struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"`
 	AuthorID string             `bson:"author_id"`
 	Content  string             `bson:"content`

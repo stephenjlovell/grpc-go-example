@@ -20,13 +20,12 @@ type Server struct {
 // CreatePost handles unary post creation
 func (s *Server) CreatePost(ctx context.Context, req *blogpb.CreatePostRequest) (*blogpb.CreatePostResponse, error) {
 	post := req.GetPost()
-	data := db.BlogItem{
+
+	id, err := db.GetCollection("posts").SaveOne(ctx, db.Post{
 		AuthorID: post.GetAuthorId(),
 		Title:    post.GetTitle(),
 		Content:  post.GetContent(),
-	}
-
-	id, err := db.GetCollection("posts").SaveOne(ctx, data)
+	})
 	if err != nil {
 		return nil, err
 	}
