@@ -33,7 +33,7 @@ func (s *GreetServer) Greet(ctx context.Context, pb *greetpb.GreetRequest) (*gre
 	response := "Hello " + firstName + " " + lastName + "!"
 
 	for i := 0; i < 20; i++ {
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond) // pretend to do work in small increments
 		if ctx.Err() == context.DeadlineExceeded {
 			log.Println("deadline exceeded")
 			return nil, status.Error(codes.DeadlineExceeded, "deadline exceeded")
