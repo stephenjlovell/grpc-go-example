@@ -7,7 +7,7 @@ import (
 	"time"
 
 	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
-	clientLib "github.com/stephenjlovell/grpc-go-example/internal/shared/client"
+	"github.com/stephenjlovell/grpc-go-example/internal/shared"
 	"google.golang.org/grpc/status"
 )
 
@@ -16,7 +16,7 @@ const (
 )
 
 func main() {
-	cc := clientLib.Connect()
+	cc := shared.Connect()
 	defer cc.Close()
 	client := greetpb.NewGreetServiceClient(cc)
 	doUnaryRequest(client)

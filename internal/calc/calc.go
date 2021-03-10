@@ -13,10 +13,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	ListenAddress = "localhost:50052"
-)
-
 // Server is a placeholder for where our server logic would reside.
 type Server struct {
 	// this is awkward but necessary to provide guarantees about our interface to calcpb.RegisterCalcServiceServer

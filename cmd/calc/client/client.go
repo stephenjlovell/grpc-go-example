@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	calcpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
-	clientLib "github.com/stephenjlovell/grpc-go-example/internal/shared/client"
+	"github.com/stephenjlovell/grpc-go-example/internal/shared"
 	"google.golang.org/grpc/status"
 )
 
@@ -22,7 +22,7 @@ func main() {
 }
 
 func doSquareRoot() {
-	cc := clientLib.Connect()
+	cc := shared.Connect()
 	defer cc.Close()
 	client := calcpb.NewCalcServiceClient(cc)
 	squareRootOf(9, client)  // works
@@ -53,7 +53,7 @@ func logResult(requestID, op string, in, out interface{}) {
 
 // client streaming example
 func doAverage() {
-	cc := clientLib.Connect()
+	cc := shared.Connect()
 	defer cc.Close()
 	client := calcpb.NewCalcServiceClient(cc)
 
@@ -91,7 +91,7 @@ func fibonacciOfLength(n int) []int64 {
 }
 
 func streamPrimes() {
-	cc := clientLib.Connect()
+	cc := shared.Connect()
 	defer cc.Close()
 	client := calcpb.NewCalcServiceClient(cc)
 	getPrimesFor(client, 2)
@@ -137,7 +137,7 @@ func doArithmetic() {
 
 func startClient(i int, wg *sync.WaitGroup) {
 	log.Printf("client %d: starting", i)
-	cc := clientLib.Connect()
+	cc := shared.Connect()
 	defer cc.Close()
 	defer wg.Done()
 

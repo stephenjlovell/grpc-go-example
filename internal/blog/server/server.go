@@ -2,6 +2,7 @@ package blog
 
 import (
 	"context"
+	"log"
 
 	"github.com/stephenjlovell/grpc-go-example/api/go/pkg/blogpb"
 	"github.com/stephenjlovell/grpc-go-example/internal/blog/db"
@@ -29,7 +30,7 @@ func (s *Server) CreatePost(ctx context.Context, req *blogpb.CreatePostRequest) 
 	if err != nil {
 		return nil, err
 	}
-
+	log.Printf("created post %s by author %s", post.GetTitle(), post.GetAuthorId())
 	return &blogpb.CreatePostResponse{
 		Post: &blogpb.Post{
 			Id:       id,
