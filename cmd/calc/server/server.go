@@ -22,7 +22,8 @@ func main() {
 	grpcServer := grpc.NewServer(getCreds())
 
 	calcpb.RegisterCalcServiceServer(grpcServer, &calc.Server{})
-
+	// to use reflection from evans CLI:
+	// $ evans -p 50052 -r -t --cacert=./ssl/ca.crt --host=localhost
 	reflection.Register(grpcServer)
 
 	if err := grpcServer.Serve(listener); err != nil {

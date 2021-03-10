@@ -113,7 +113,8 @@ func main() {
 	grpcServer := grpc.NewServer(getCreds())
 
 	greetpb.RegisterGreetServiceServer(grpcServer, &GreetServer{})
-
+	// to use reflection from evans CLI:
+	// $ evans -p 50051 -r -t --cacert=./ssl/ca.crt --host=localhost
 	reflection.Register(grpcServer)
 
 	if err := grpcServer.Serve(listener); err != nil {
