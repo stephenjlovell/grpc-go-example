@@ -36,7 +36,6 @@ func GetCreds() grpc.ServerOption {
 }
 
 func ListenTo() net.Listener {
-	log.Println("calculating... beep boop...")
 	// listen on the custom port for gRPC
 	listener, err := net.Listen("tcp", listenAddress)
 	if err != nil {

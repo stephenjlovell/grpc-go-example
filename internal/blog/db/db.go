@@ -14,6 +14,7 @@ import (
 
 const (
 	dbName = "blogdb"
+	dbURI  = "mongodb://localhost:27017"
 )
 
 var _client *Client
@@ -71,9 +72,8 @@ func GracefulDisconnect() {
 }
 
 func newClient() *Client {
-	opts := &options.ClientOptions{
-		Hosts: []string{"mongodb://localhost:27017"},
-	}
+	opts := &options.ClientOptions{}
+	opts.ApplyURI(dbURI)
 	dbClient, dbErr := mongo.NewClient(opts)
 	if dbErr != nil {
 		log.Fatal(dbErr)
