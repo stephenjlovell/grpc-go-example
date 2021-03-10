@@ -8,6 +8,7 @@ import (
 
 	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -15,9 +16,9 @@ func main() {
 	defer cc.Close()
 	client := greetpb.NewGreetServiceClient(cc)
 	doUnaryRequest(client)
-	doServerStreaming(client)
-	doClientStreaming(client)
-	doBiStreaming(client)
+	// doServerStreaming(client)
+	// doClientStreaming(client)
+	// doBiStreaming(client)
 }
 
 func connect() *grpc.ClientConn {
@@ -146,19 +147,31 @@ func requestServerStreaming(client greetpb.GreetServiceClient) greetpb.GreetServ
 	return responseStream
 }
 
-// GreetManyTimes(ctx context.Context, in *GreetManyTimesRequest, opts ...grpc.CallOption) (GreetService_GreetManyTimesClient, error)
-
 func doUnaryRequest(client greetpb.GreetServiceClient) {
-	log.Println("executing single RPC call...")
+	log.Println("executing unary RPC calls...")
+	unaryRequestWithTimeout(client, 300*time.Millisecond)
+	unaryRequestWithTimeout(client, 100*time.Millisecond) // will time out
+}
+
+func unaryRequestWithTimeout(client greetpb.GreetServiceClient, timeout time.Duration) {
 	request := &greetpb.GreetRequest{
 		Greeting: &greetpb.Greeting{
 			FirstName: "Steve",
 			LastName:  "Lovell",
 		},
 	}
-	response, err := client.Greet(context.Background(), request)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	response, err := client.Greet(ctx, request)
 	if err != nil {
-		log.Fatalf("failed to receive response: %v\n", err)
+		grpcErr, ok := status.FromError(err)
+		if ok {
+			log.Printf("WARNING: %v", grpcErr.Message())
+		} else {
+			log.Fatalf("failed to receive response: %v\n", err)
+		}
+		return
 	}
 	log.Printf("received unary response: %v\n", response.GetResponse())
 }

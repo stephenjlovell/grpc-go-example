@@ -12,6 +12,8 @@ import (
 	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -24,11 +26,20 @@ type GreetServer struct {
 	greetpb.UnimplementedGreetServiceServer
 }
 
-// Greet generates a response to the rpc call
+// Greet generates a response to the rpc call after sleeping 200ms
 func (s *GreetServer) Greet(ctx context.Context, pb *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
 	firstName := pb.GetGreeting().GetFirstName()
 	lastName := pb.GetGreeting().GetLastName()
 	response := "Hello " + firstName + " " + lastName + "!"
+
+	for i := 0; i < 20; i++ {
+		time.Sleep(10 * time.Millisecond)
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Println("deadline exceeded")
+			return nil, status.Error(codes.DeadlineExceeded, "deadline exceeded")
+		}
+	}
+	log.Println(response)
 	return &greetpb.GreetResponse{
 		Response: response,
 	}, nil
