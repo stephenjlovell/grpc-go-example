@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	LISTEN_ADDRESS = "localhost:50052"
+	ListenAddress = "localhost:50052"
 )
 
 // Server is a placeholder for where our server logic would reside.

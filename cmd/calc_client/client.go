@@ -169,7 +169,7 @@ func connect() *grpc.ClientConn {
 	if sslErr != nil {
 		log.Fatalf("Failed to load CA trust certificate: %v", sslErr)
 	}
-	cc, err := grpc.Dial(calc.LISTEN_ADDRESS, grpc.WithTransportCredentials(creds))
+	cc, err := grpc.Dial(calc.ListenAddress, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Fatalf("Failed to connect to server: %v\n", err)
 	}

@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	CERT_FILE = "ssl/server.crt"
-	KEY_FILE  = "ssl/server.pem"
+	CertFile = "ssl/server.crt"
+	KeyFile  = "ssl/server.pem"
 )
 
 func main() {
-	listener := listenTo(calc.LISTEN_ADDRESS)
+	listener := listenTo(calc.ListenAddress)
 	grpcServer := grpc.NewServer(getCreds())
 
 	calcpb.RegisterCalcServiceServer(grpcServer, &calc.Server{})
@@ -28,7 +28,7 @@ func main() {
 }
 
 func getCreds() grpc.ServerOption {
-	creds, err := credentials.NewServerTLSFromFile(CERT_FILE, KEY_FILE)
+	creds, err := credentials.NewServerTLSFromFile(CertFile, KeyFile)
 	if err != nil {
 		log.Fatalln("failed to load certificate from file")
 	}

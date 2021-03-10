@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	LISTEN_ADDRESS = "localhost:50051"
-	CERT_FILE      = "ssl/server.crt"
-	KEY_FILE       = "ssl/server.pem"
+	ListenAddress = "localhost:50051"
+	CertFile      = "ssl/server.crt"
+	KeyFile       = "ssl/server.pem"
 )
 
 // GreetServer is our server implentation.
@@ -107,7 +107,7 @@ func (s *GreetServer) GreetEveryone(stream greetpb.GreetService_GreetEveryoneSer
 }
 
 func main() {
-	listener := listenTo(LISTEN_ADDRESS)
+	listener := listenTo(ListenAddress)
 
 	grpcServer := grpc.NewServer(getCreds())
 
@@ -119,7 +119,7 @@ func main() {
 }
 
 func getCreds() grpc.ServerOption {
-	creds, err := credentials.NewServerTLSFromFile(CERT_FILE, KEY_FILE)
+	creds, err := credentials.NewServerTLSFromFile(CertFile, KeyFile)
 	if err != nil {
 		log.Fatalln("failed to load certificate from file")
 	}

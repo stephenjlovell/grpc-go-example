@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	LISTEN_ADDRESS = "localhost:50051"
-	CA_CERT_FILE   = "ssl/ca.crt"
+	ListenAddress = "localhost:50051"
+	CA_CERT_FILE  = "ssl/ca.crt"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func connect() *grpc.ClientConn {
 	if sslErr != nil {
 		log.Fatalf("Failed to load CA trust certificate: %v", sslErr)
 	}
-	cc, err := grpc.Dial(LISTEN_ADDRESS, grpc.WithTransportCredentials(creds))
+	cc, err := grpc.Dial(ListenAddress, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Fatalf("Failed to connect to server: %v\n", err)
 	}
