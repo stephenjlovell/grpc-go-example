@@ -8,7 +8,13 @@ import (
 
 	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
+)
+
+const (
+	LISTEN_ADDRESS = "localhost:50051"
+	CA_CERT_FILE   = "ssl/ca.crt"
 )
 
 func main() {
@@ -22,7 +28,11 @@ func main() {
 }
 
 func connect() *grpc.ClientConn {
-	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	creds, sslErr := credentials.NewClientTLSFromFile(CA_CERT_FILE, "")
+	if sslErr != nil {
+		log.Fatalf("Failed to load CA trust certificate: %v", sslErr)
+	}
+	cc, err := grpc.Dial(LISTEN_ADDRESS, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Fatalf("Failed to connect to server: %v\n", err)
 	}

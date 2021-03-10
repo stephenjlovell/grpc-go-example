@@ -13,11 +13,14 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
 const (
-	LISTEN_ADDRESS = "0.0.0.0:50051"
+	LISTEN_ADDRESS = "localhost:50051"
+	CERT_FILE      = "ssl/server.crt"
+	KEY_FILE       = "ssl/server.pem"
 )
 
 // GreetServer is our server implentation.
@@ -105,13 +108,22 @@ func (s *GreetServer) GreetEveryone(stream greetpb.GreetService_GreetEveryoneSer
 
 func main() {
 	listener := listenTo(LISTEN_ADDRESS)
-	grpcServer := grpc.NewServer()
+
+	grpcServer := grpc.NewServer(getCreds())
 
 	greetpb.RegisterGreetServiceServer(grpcServer, &GreetServer{})
 
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v\n", err)
 	}
+}
+
+func getCreds() grpc.ServerOption {
+	creds, err := credentials.NewServerTLSFromFile(CERT_FILE, KEY_FILE)
+	if err != nil {
+		log.Fatalln("failed to load certificate from file")
+	}
+	return grpc.Creds(creds)
 }
 
 func listenTo(address string) net.Listener {

@@ -12,7 +12,12 @@ import (
 	calcpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
 	calc "github.com/stephenjlovell/grpc-go-example/internal/calc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
+)
+
+const (
+	CA_CERT_FILE = "ssl/ca.crt"
 )
 
 func main() {
@@ -160,9 +165,12 @@ func startClient(i int, wg *sync.WaitGroup) {
 }
 
 func connect() *grpc.ClientConn {
-	cc, err := grpc.Dial(calc.LISTEN_ADDRESS, grpc.WithInsecure())
+	creds, sslErr := credentials.NewClientTLSFromFile(CA_CERT_FILE, "")
+	if sslErr != nil {
+		log.Fatalf("Failed to load CA trust certificate: %v", sslErr)
+	}
+	cc, err := grpc.Dial(calc.LISTEN_ADDRESS, grpc.WithTransportCredentials(creds))
 	if err != nil {
-		// blow everything up if the server won't speak to us
 		log.Fatalf("Failed to connect to server: %v\n", err)
 	}
 	return cc
