@@ -7,36 +7,22 @@ import (
 	"time"
 
 	greetpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/greetpb"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	clientLib "github.com/stephenjlovell/grpc-go-example/internal/shared/client"
 	"google.golang.org/grpc/status"
 )
 
 const (
 	ListenAddress = "localhost:50051"
-	CA_CERT_FILE  = "ssl/ca.crt"
 )
 
 func main() {
-	cc := connect()
+	cc := clientLib.Connect()
 	defer cc.Close()
 	client := greetpb.NewGreetServiceClient(cc)
 	doUnaryRequest(client)
-	// doServerStreaming(client)
-	// doClientStreaming(client)
-	// doBiStreaming(client)
-}
-
-func connect() *grpc.ClientConn {
-	creds, sslErr := credentials.NewClientTLSFromFile(CA_CERT_FILE, "")
-	if sslErr != nil {
-		log.Fatalf("Failed to load CA trust certificate: %v", sslErr)
-	}
-	cc, err := grpc.Dial(ListenAddress, grpc.WithTransportCredentials(creds))
-	if err != nil {
-		log.Fatalf("Failed to connect to server: %v\n", err)
-	}
-	return cc
+	doServerStreaming(client)
+	doClientStreaming(client)
+	doBiStreaming(client)
 }
 
 func doBiStreaming(client greetpb.GreetServiceClient) {

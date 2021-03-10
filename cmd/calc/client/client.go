@@ -10,14 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	calcpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
-	calc "github.com/stephenjlovell/grpc-go-example/internal/calc"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	clientLib "github.com/stephenjlovell/grpc-go-example/internal/shared/client"
 	"google.golang.org/grpc/status"
-)
-
-const (
-	CA_CERT_FILE = "ssl/ca.crt"
 )
 
 func main() {
@@ -28,7 +22,7 @@ func main() {
 }
 
 func doSquareRoot() {
-	cc := connect()
+	cc := clientLib.Connect()
 	defer cc.Close()
 	client := calcpb.NewCalcServiceClient(cc)
 	squareRootOf(9, client)  // works
@@ -59,7 +53,7 @@ func logResult(requestID, op string, in, out interface{}) {
 
 // client streaming example
 func doAverage() {
-	cc := connect()
+	cc := clientLib.Connect()
 	defer cc.Close()
 	client := calcpb.NewCalcServiceClient(cc)
 
@@ -97,7 +91,7 @@ func fibonacciOfLength(n int) []int64 {
 }
 
 func streamPrimes() {
-	cc := connect()
+	cc := clientLib.Connect()
 	defer cc.Close()
 	client := calcpb.NewCalcServiceClient(cc)
 	getPrimesFor(client, 2)
@@ -143,7 +137,7 @@ func doArithmetic() {
 
 func startClient(i int, wg *sync.WaitGroup) {
 	log.Printf("client %d: starting", i)
-	cc := connect()
+	cc := clientLib.Connect()
 	defer cc.Close()
 	defer wg.Done()
 
@@ -162,18 +156,6 @@ func startClient(i int, wg *sync.WaitGroup) {
 		log.Printf("[%s] client:%d result: %v", response.GetJobUid(), i, response.GetResult())
 	}
 	log.Printf("client:%d finished working", i)
-}
-
-func connect() *grpc.ClientConn {
-	creds, sslErr := credentials.NewClientTLSFromFile(CA_CERT_FILE, "")
-	if sslErr != nil {
-		log.Fatalf("Failed to load CA trust certificate: %v", sslErr)
-	}
-	cc, err := grpc.Dial(calc.ListenAddress, grpc.WithTransportCredentials(creds))
-	if err != nil {
-		log.Fatalf("Failed to connect to server: %v\n", err)
-	}
-	return cc
 }
 
 // NOTE: this intentionally generates occasional malformed requests in order to make sure the
