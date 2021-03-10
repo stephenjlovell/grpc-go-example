@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
@@ -24,9 +23,6 @@ const (
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	dbClient := db.NewClient()
-	// collection := dbClient.Database("blogdb").Collection("posts")
 
 	listener := listenTo(blogServer.ListenAddress)
 	grpcServer := grpc.NewServer(getCreds())
@@ -58,9 +54,7 @@ func main() {
 	listener.Close()
 	fmt.Printf("done.\n")
 
-	fmt.Printf("disconnecting from database...")
-	dbClient.Disconnect(context.TODO())
-	fmt.Printf("done.\n")
+	db.GracefulDisconnect()
 
 }
 

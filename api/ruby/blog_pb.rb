@@ -11,9 +11,17 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :title, :string, 3
       optional :content, :string, 4
     end
+    add_message "blog.CreatePostRequest" do
+      optional :post, :message, 1, "blog.Post"
+    end
+    add_message "blog.CreatePostResponse" do
+      optional :post, :message, 1, "blog.Post"
+    end
   end
 end
 
 module Blog
   Post = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.Post").msgclass
+  CreatePostRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.CreatePostRequest").msgclass
+  CreatePostResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.CreatePostResponse").msgclass
 end
