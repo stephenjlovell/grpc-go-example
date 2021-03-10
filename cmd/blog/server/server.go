@@ -1,11 +1,16 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 
 	blogpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/blogpb"
-	blog "github.com/stephenjlovell/grpc-go-example/internal/blog"
+	"github.com/stephenjlovell/grpc-go-example/internal/blog/db"
+	blogServer "github.com/stephenjlovell/grpc-go-example/internal/blog/server"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -18,17 +23,45 @@ const (
 )
 
 func main() {
-	listener := listenTo(blog.ListenAddress)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	dbClient := db.NewClient()
+	// collection := dbClient.Database("blogdb").Collection("posts")
+
+	listener := listenTo(blogServer.ListenAddress)
 	grpcServer := grpc.NewServer(getCreds())
 
-	blogpb.RegisterBlogServiceServer(grpcServer, &blog.Server{})
+	blogpb.RegisterBlogServiceServer(grpcServer, &blogServer.Server{})
 	// to use reflection from evans CLI:
 	// $ evans -p 50053 -r -t --cacert=./ssl/ca.crt --host=localhost
 	reflection.Register(grpcServer)
 
-	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatalf("failed to serve: %v\n", err)
-	}
+	go func() {
+		log.Println("starting blog server... beep boop...")
+		if err := grpcServer.Serve(listener); err != nil {
+			log.Fatalf("failed to serve: %v\n", err)
+		}
+	}()
+
+	sigKill := make(chan os.Signal, 1)
+	signal.Notify(sigKill, os.Interrupt) // relay incoming signals to sigKill
+
+	<-sigKill // block until OS signal
+
+	log.Printf("\ngracefully shutting down server...\n")
+
+	fmt.Printf("finishing running grpc requests...")
+	grpcServer.GracefulStop()
+	fmt.Printf("done.\n")
+
+	fmt.Printf("closing listener...")
+	listener.Close()
+	fmt.Printf("done.\n")
+
+	fmt.Printf("disconnecting from database...")
+	dbClient.Disconnect(context.TODO())
+	fmt.Printf("done.\n")
+
 }
 
 func getCreds() grpc.ServerOption {
@@ -40,7 +73,6 @@ func getCreds() grpc.ServerOption {
 }
 
 func listenTo(address string) net.Listener {
-	log.Println("calculating... beep boop...")
 	// listen on the custom port for gRPC
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
