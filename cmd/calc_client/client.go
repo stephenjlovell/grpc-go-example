@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -13,12 +12,44 @@ import (
 	calcpb "github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
 	calc "github.com/stephenjlovell/grpc-go-example/internal/calc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
+	doSquareRoot()
 	doAverage()
-	// streamPrimes()
-	// doArithmetic()
+	streamPrimes()
+	doArithmetic()
+}
+
+func doSquareRoot() {
+	cc := connect()
+	defer cc.Close()
+	client := calcpb.NewCalcServiceClient(cc)
+	squareRootOf(9, client)  // works
+	squareRootOf(-1, client) // throws INVALID_ARGUMENT
+}
+
+func squareRootOf(v int64, client calcpb.CalcServiceClient) {
+	requestID := uuid.NewString()
+	res, err := client.SquareRoot(context.Background(), &calcpb.SquareRootRequest{
+		Value:  v,
+		JobUid: requestID,
+	})
+	if err != nil {
+		grpcErr, ok := status.FromError(err)
+		if ok { // it's a GRPC error
+			log.Printf("[%s] WARNING: %s", requestID, grpcErr.Message())
+		} else { // it's something else
+			log.Fatalf("[%s] %v", requestID, err)
+		}
+	} else {
+		logResult(requestID, "square root", v, res.GetResult())
+	}
+}
+
+func logResult(requestID, op string, in, out interface{}) {
+	log.Printf("[%s] %s: %v => %v", requestID, op, in, out)
 }
 
 // client streaming example
@@ -46,8 +77,7 @@ func doAverage() {
 	}
 	// await results
 	res, err := stream.CloseAndRecv()
-	log.Printf("[%s] average: %v => %v", requestID, seq, res.GetResult())
-
+	logResult(requestID, "average", seq, res.GetResult())
 }
 
 // 1, 1, 2, 3, 5, 8... till your int64 overfloweth
@@ -92,7 +122,7 @@ func getPrimesFor(client calcpb.CalcServiceClient, val uint32) {
 		}
 		results = append(results, resp.GetValue())
 	}
-	log.Printf("[%s] primes: %v => %v", req.GetJobUid(), val, results)
+	logResult(req.GetJobUid(), "primes", val, results)
 }
 
 func doArithmetic() {
@@ -119,7 +149,7 @@ func startClient(i int, wg *sync.WaitGroup) {
 		time.Sleep(time.Duration(rand.Intn(300)+200) * time.Millisecond)
 
 		r := makeRandomRequest()
-		response, err := sendRequest(client, r)
+		response, err := client.Calculate(context.Background(), r)
 		if err != nil {
 			log.Printf("[%s] client:%d WARNING: %v", r.GetJobUid(), i, err)
 			continue
@@ -136,14 +166,6 @@ func connect() *grpc.ClientConn {
 		log.Fatalf("Failed to connect to server: %v\n", err)
 	}
 	return cc
-}
-
-func sendRequest(client calcpb.CalcServiceClient, r *calcpb.CalcRequest) (*calcpb.CalcResponse, error) {
-	response, err := client.Calculate(context.Background(), r)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %v", err)
-	}
-	return response, nil
 }
 
 // NOTE: this intentionally generates occasional malformed requests in order to make sure the

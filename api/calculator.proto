@@ -43,10 +43,22 @@ message AverageResponse {
   string job_uid = 2;
 }
 
+message SquareRootRequest {
+  int64 value = 1;
+  string job_uid = 2;
+}
+
+message SquareRootResponse {
+  double result = 1;
+  string job_uid = 2;
+}
+
 service CalcService {
-  rpc Calculate(CalcRequest) returns (CalcResponse) { }
+  rpc Calculate(CalcRequest) returns (CalcResponse) {}
 
   rpc GetPrimes(PrimeRequest) returns (stream PrimeResponse) {}
 
   rpc GetAverage(stream AverageRequest) returns (AverageResponse) {}
+  // error handling example
+  rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse) {}
 }

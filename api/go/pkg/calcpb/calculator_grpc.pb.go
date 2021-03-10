@@ -21,6 +21,8 @@ type CalcServiceClient interface {
 	Calculate(ctx context.Context, in *CalcRequest, opts ...grpc.CallOption) (*CalcResponse, error)
 	GetPrimes(ctx context.Context, in *PrimeRequest, opts ...grpc.CallOption) (CalcService_GetPrimesClient, error)
 	GetAverage(ctx context.Context, opts ...grpc.CallOption) (CalcService_GetAverageClient, error)
+	// error handling example
+	SquareRoot(ctx context.Context, in *SquareRootRequest, opts ...grpc.CallOption) (*SquareRootResponse, error)
 }
 
 type calcServiceClient struct {
@@ -106,6 +108,15 @@ func (x *calcServiceGetAverageClient) CloseAndRecv() (*AverageResponse, error) {
 	return m, nil
 }
 
+func (c *calcServiceClient) SquareRoot(ctx context.Context, in *SquareRootRequest, opts ...grpc.CallOption) (*SquareRootResponse, error) {
+	out := new(SquareRootResponse)
+	err := c.cc.Invoke(ctx, "/calc.CalcService/SquareRoot", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CalcServiceServer is the server API for CalcService service.
 // All implementations must embed UnimplementedCalcServiceServer
 // for forward compatibility
@@ -113,6 +124,8 @@ type CalcServiceServer interface {
 	Calculate(context.Context, *CalcRequest) (*CalcResponse, error)
 	GetPrimes(*PrimeRequest, CalcService_GetPrimesServer) error
 	GetAverage(CalcService_GetAverageServer) error
+	// error handling example
+	SquareRoot(context.Context, *SquareRootRequest) (*SquareRootResponse, error)
 	mustEmbedUnimplementedCalcServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedCalcServiceServer) GetPrimes(*PrimeRequest, CalcService_GetPr
 }
 func (UnimplementedCalcServiceServer) GetAverage(CalcService_GetAverageServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetAverage not implemented")
+}
+func (UnimplementedCalcServiceServer) SquareRoot(context.Context, *SquareRootRequest) (*SquareRootResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SquareRoot not implemented")
 }
 func (UnimplementedCalcServiceServer) mustEmbedUnimplementedCalcServiceServer() {}
 
@@ -207,6 +223,24 @@ func (x *calcServiceGetAverageServer) Recv() (*AverageRequest, error) {
 	return m, nil
 }
 
+func _CalcService_SquareRoot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SquareRootRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CalcServiceServer).SquareRoot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/calc.CalcService/SquareRoot",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CalcServiceServer).SquareRoot(ctx, req.(*SquareRootRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CalcService_ServiceDesc is the grpc.ServiceDesc for CalcService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -217,6 +251,10 @@ var CalcService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Calculate",
 			Handler:    _CalcService_Calculate_Handler,
+		},
+		{
+			MethodName: "SquareRoot",
+			Handler:    _CalcService_SquareRoot_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

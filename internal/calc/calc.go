@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"strings"
 
 	"github.com/stephenjlovell/grpc-go-example/api/go/pkg/calcpb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -18,6 +21,22 @@ const (
 type Server struct {
 	// this is awkward but necessary to provide guarantees about our interface to calcpb.RegisterCalcServiceServer
 	calcpb.UnimplementedCalcServiceServer
+}
+
+// SquareRoot computes the square root for a given int
+func (s *Server) SquareRoot(ctx context.Context, pb *calcpb.SquareRootRequest) (*calcpb.SquareRootResponse, error) {
+	v := pb.GetValue()
+	if v < 0 {
+		err := status.Errorf(codes.InvalidArgument, "value cannot be negative: %v", v)
+		log.Printf("[%s] WARNING: %v", pb.GetJobUid(), err)
+		return nil, err
+	}
+	result := math.Sqrt(float64(v))
+	log.Printf("[%s] square root: %v => %v", pb.GetJobUid(), pb.GetValue(), result)
+	return &calcpb.SquareRootResponse{
+		JobUid: pb.GetJobUid(),
+		Result: result,
+	}, nil
 }
 
 // GetAverage computes the average from a stream of ints
@@ -95,7 +114,7 @@ func logResult(result float64, pb *calcpb.CalcRequest) {
 func calculateResult(pb *calcpb.CalcRequest) (float64, error) {
 	operands := pb.GetOperands()
 	if len(operands) < 2 {
-		return 0, fmt.Errorf("invalid operation: too few operands")
+		return 0, status.Errorf(codes.InvalidArgument, "invalid operation: too few operands")
 	}
 	switch pb.GetOperation() {
 	case calcpb.Operations_ADD:
@@ -107,7 +126,7 @@ func calculateResult(pb *calcpb.CalcRequest) (float64, error) {
 	case calcpb.Operations_DIVIDE:
 		return divide(operands)
 	default:
-		return 0, fmt.Errorf("invalid operation requested: %v", pb.GetOperation())
+		return 0, status.Errorf(codes.InvalidArgument, "invalid operation requested: %v", pb.GetOperation())
 	}
 }
 
@@ -139,7 +158,7 @@ func divide(operands []int64) (float64, error) {
 	result := float64(operands[0])
 	for _, n := range operands[1:] {
 		if n == 0 {
-			return 0, fmt.Errorf("cannot divide by zero")
+			return 0, status.Errorf(codes.InvalidArgument, "cannot divide by zero")
 		}
 		result /= float64(n)
 	}

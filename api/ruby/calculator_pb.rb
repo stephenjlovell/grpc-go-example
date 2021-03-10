@@ -30,6 +30,14 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :result, :double, 1
       optional :job_uid, :string, 2
     end
+    add_message "calc.SquareRootRequest" do
+      optional :value, :int64, 1
+      optional :job_uid, :string, 2
+    end
+    add_message "calc.SquareRootResponse" do
+      optional :result, :double, 1
+      optional :job_uid, :string, 2
+    end
     add_enum "calc.Operations" do
       value :UNKNOWN, 0
       value :ADD, 1
@@ -47,5 +55,7 @@ module Calc
   PrimeResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.PrimeResponse").msgclass
   AverageRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.AverageRequest").msgclass
   AverageResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.AverageResponse").msgclass
+  SquareRootRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.SquareRootRequest").msgclass
+  SquareRootResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.SquareRootResponse").msgclass
   Operations = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("calc.Operations").enummodule
 end
