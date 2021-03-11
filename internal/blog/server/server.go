@@ -8,6 +8,7 @@ import (
 	"github.com/stephenjlovell/grpc-go-example/internal/blog/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -52,18 +53,45 @@ func (s *Server) GetPost(ctx context.Context, req *blogpb.GetPostRequest) (*blog
 		return nil, status.Errorf(codes.InvalidArgument, "cannot parse ID: %v", err)
 	}
 	data := new(db.Post)
-	// data := new(bson.M)
-	findErr := db.GetCollection("posts").FindOne(ctx, bson.D{{"_id", id}}).Decode(data)
+	filter := bson.D{{"_id", id}}
+	findErr := db.GetCollection("posts").FindOne(ctx, filter).Decode(data)
 	if findErr != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "cannot find post with id %v: %v", id, findErr)
 	}
 
 	return &blogpb.GetPostResponse{
-		Post: &blogpb.Post{
-			Id:       data.ID.Hex(),
-			AuthorId: data.AuthorID,
-			Content:  data.Content,
-			Title:    data.Title,
-		},
+		Post: toPost(data),
 	}, nil
+}
+
+func (s *Server) UpdatePost(ctx context.Context, req *blogpb.UpdatePostRequest) (*blogpb.UpdatePostResponse, error) {
+	post := req.GetPost()
+	id, err := primitive.ObjectIDFromHex(post.GetId())
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "cannot parse ID: %v", err)
+	}
+	data := &db.Post{
+		AuthorID: post.GetAuthorId(),
+		Title:    post.GetTitle(),
+		Content:  post.GetContent(),
+	}
+	filter := bson.D{{"_id", id}}
+
+	res := db.GetCollection("posts").FindOneAndUpdate(ctx, filter, data)
+	if res.Err() == mongo.ErrNoDocuments {
+		return nil, status.Errorf(codes.InvalidArgument, "no post matches ID %v: %v", post.GetId(), res.Err())
+	}
+
+	return &blogpb.UpdatePostResponse{
+		Post: toPost(data),
+	}, nil
+}
+
+func toPost(data *db.Post) *blogpb.Post {
+	return &blogpb.Post{
+		Id:       data.ID.Hex(),
+		AuthorId: data.AuthorID,
+		Content:  data.Content,
+		Title:    data.Title,
+	}
 }

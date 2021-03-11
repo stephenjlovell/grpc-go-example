@@ -27,8 +27,18 @@ message GetPostResponse {
   Post post = 1;
 }
 
+message UpdatePostRequest {
+  Post post = 1;
+}
+
+message UpdatePostResponse {
+  Post post = 1;
+}
+
 service BlogService {
   rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
 
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
+
+  rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse);
 }

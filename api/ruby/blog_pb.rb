@@ -23,6 +23,12 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "blog.GetPostResponse" do
       optional :post, :message, 1, "blog.Post"
     end
+    add_message "blog.UpdatePostRequest" do
+      optional :post, :message, 1, "blog.Post"
+    end
+    add_message "blog.UpdatePostResponse" do
+      optional :post, :message, 1, "blog.Post"
+    end
   end
 end
 
@@ -32,4 +38,6 @@ module Blog
   CreatePostResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.CreatePostResponse").msgclass
   GetPostRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.GetPostRequest").msgclass
   GetPostResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.GetPostResponse").msgclass
+  UpdatePostRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.UpdatePostRequest").msgclass
+  UpdatePostResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("blog.UpdatePostResponse").msgclass
 end

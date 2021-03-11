@@ -14,6 +14,25 @@ func main() {
 	client := blogpb.NewBlogServiceClient(cc)
 	id := doCreatePost(client)
 	doGetPost(client, id)
+	doUpdatePost(client, id)
+}
+
+func doUpdatePost(client blogpb.BlogServiceClient, id string) {
+	req := &blogpb.UpdatePostRequest{
+		Post: &blogpb.Post{
+			Id:       id,
+			AuthorId: "stephenjlovell",
+			Title:    "my first MediumClone post (edited)",
+			Content:  "No more lorem, this is the real stuff!",
+		},
+	}
+
+	res, err := client.UpdatePost(context.Background(), req)
+	if err != nil {
+		log.Fatalf("failed to update blog post: %v", err)
+	}
+
+	log.Printf("post updated: %v", res.GetPost())
 }
 
 func doCreatePost(client blogpb.BlogServiceClient) string {
@@ -30,7 +49,7 @@ func doCreatePost(client blogpb.BlogServiceClient) string {
 		log.Fatalf("unexpected error: %v", err)
 		return ""
 	}
-	log.Printf("Post created: %v", res.GetPost())
+	log.Printf("Post with id %s created: %v", res.GetPost().GetId(), res.GetPost())
 	return res.GetPost().GetId()
 }
 
