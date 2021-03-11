@@ -6,6 +6,10 @@ import (
 
 	"github.com/stephenjlovell/grpc-go-example/api/go/pkg/blogpb"
 	"github.com/stephenjlovell/grpc-go-example/internal/blog/db"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -37,6 +41,29 @@ func (s *Server) CreatePost(ctx context.Context, req *blogpb.CreatePostRequest) 
 			AuthorId: post.GetAuthorId(),
 			Title:    post.GetTitle(),
 			Content:  post.GetContent(),
+		},
+	}, nil
+}
+
+func (s *Server) GetPost(ctx context.Context, req *blogpb.GetPostRequest) (*blogpb.GetPostResponse, error) {
+	blogId := req.GetPostId()
+	id, err := primitive.ObjectIDFromHex(blogId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "cannot parse ID: %v", err)
+	}
+	data := new(db.Post)
+	// data := new(bson.M)
+	findErr := db.GetCollection("posts").FindOne(ctx, bson.D{{"_id", id}}).Decode(data)
+	if findErr != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "cannot find post with id %v: %v", id, findErr)
+	}
+
+	return &blogpb.GetPostResponse{
+		Post: &blogpb.Post{
+			Id:       data.ID.Hex(),
+			AuthorId: data.AuthorID,
+			Content:  data.Content,
+			Title:    data.Title,
 		},
 	}, nil
 }
